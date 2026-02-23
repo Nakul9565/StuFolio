@@ -90,6 +90,38 @@ class ApiClient {
         return this.request<any>("/students/me/academics");
     }
 
+    // Coding Profiles
+    getCodingProfiles() {
+        return this.request<any[]>("/students/me/coding-profiles");
+    }
+
+    linkCodingProfile(platform: string, handle: string) {
+        return this.request<any>("/students/me/coding-profiles", {
+            method: "POST",
+            body: JSON.stringify({ platform, handle }),
+        });
+    }
+
+    unlinkCodingProfile(id: string) {
+        return this.request<any>(`/students/me/coding-profiles/${id}`, {
+            method: "DELETE",
+        });
+    }
+
+    refreshCodingProfiles() {
+        return this.request<any>("/students/me/coding-profiles/refresh", {
+            method: "POST",
+        });
+    }
+
+    getVerificationCode() {
+        return this.request<{ code: string }>("/students/me/verification-code");
+    }
+
+    getAIAnalysis() {
+        return this.request<any>("/analysis/me");
+    }
+
     // Mentor
     getMentorDashboard() {
         return this.request<any>("/mentor/dashboard");

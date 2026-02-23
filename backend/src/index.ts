@@ -7,6 +7,7 @@ import mentorRoutes from "./routes/mentor";
 import leaderboardRoutes from "./routes/leaderboard";
 import eventRoutes from "./routes/events";
 import notificationRoutes from "./routes/notifications";
+import analysisRoutes from "./routes/analysis";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -30,6 +31,7 @@ app.use("/api/mentor", mentorRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/analysis", analysisRoutes);
 
 // Start server
 app.listen(PORT, () => {

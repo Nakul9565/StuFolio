@@ -42,6 +42,7 @@ model Student {
   codingProfiles CodingProfile[]
   badges         Badge[]
   skills         StudentSkill[]
+  verificationCode String?           @unique
 }
 
 // ─── Mentor ──────────────────────────────────────────────

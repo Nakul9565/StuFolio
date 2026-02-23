@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import prisma from "../lib/prisma";
 import { AuthRequest, authenticateToken, requireRole } from "../middleware/auth";
+import { fetchPlatformStats } from "../services/platformFetcher";
 
 const router = Router();
 
@@ -210,6 +211,197 @@ router.get("/me/academics", authenticateToken, requireRole("STUDENT"), async (re
     } catch (error: any) {
         console.error("Academics error:", error);
         return res.status(500).json({ error: "Failed to load academics" });
+    }
+});
+
+// GET /api/students/me/coding-profiles — list linked coding profiles
+router.get("/me/coding-profiles", authenticateToken, requireRole("STUDENT"), async (req: AuthRequest, res: Response) => {
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: req.user!.userId },
+            include: { student: { include: { codingProfiles: true } } },
+        });
+
+        if (!user?.student) return res.status(404).json({ error: "Student not found" });
+
+        const platforms = ["LeetCode", "Codeforces", "GitHub", "CodeChef"];
+        const linked = user.student.codingProfiles;
+
+        const profiles = platforms.map((platform) => {
+            const existing = linked.find((p) => p.platform === platform);
+            return {
+                id: existing?.id || null,
+                platform,
+                handle: existing?.handle || "",
+                connected: !!existing,
+            };
+        });
+
+        return res.json(profiles);
+    } catch (error: any) {
+        console.error("Coding profiles error:", error);
+        return res.status(500).json({ error: "Failed to load coding profiles" });
+    }
+});
+
+// GET /api/students/me/verification-code — get or generate student verification code
+router.get("/me/verification-code", authenticateToken, requireRole("STUDENT"), async (req: AuthRequest, res: Response) => {
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: req.user!.userId },
+            include: { student: true },
+        });
+
+        if (!user?.student) return res.status(404).json({ error: "Student not found" });
+
+        let code = user.student.verificationCode;
+        if (!code) {
+            // Generate a code: STU + random 4-char hex from student ID or random
+            const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+            code = `STU-${randomPart}`;
+            await prisma.student.update({
+                where: { id: user.student.id },
+                data: { verificationCode: code },
+            });
+        }
+
+        return res.json({ code });
+    } catch (error: any) {
+        console.error("Get verification code error:", error);
+        return res.status(500).json({ error: "Failed to get verification code" });
+    }
+});
+
+// POST /api/students/me/coding-profiles — verify handle and link profile
+router.post("/me/coding-profiles", authenticateToken, requireRole("STUDENT"), async (req: AuthRequest, res: Response) => {
+    try {
+        const { platform, handle } = req.body;
+
+        if (!platform || !handle) {
+            return res.status(400).json({ error: "Platform and handle are required" });
+        }
+
+        // Verify the handle exists on the platform and fetch stats
+        const result = await fetchPlatformStats(platform, handle);
+
+        if (!result.verified) {
+            return res.status(400).json({ error: `Could not find user "${handle.replace(/^@/, '')}" on ${platform}. Please check the username and try again.` });
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: req.user!.userId },
+            include: { student: true },
+        });
+
+        if (!user?.student) return res.status(404).json({ error: "Student not found" });
+
+        // Ownership Verification (Codolio-style bio check)
+        // We check if the student's verification code is in the platform's bio
+        const vCode = user.student.verificationCode;
+        if (vCode) {
+            const platformBio = (result.bio || "").toLowerCase();
+            const searchCode = vCode.toLowerCase();
+            if (!platformBio.includes(searchCode)) {
+                return res.status(400).json({
+                    error: `Ownership verification failed. Please add your verification code "${vCode}" to your ${platform} bio/about section and try again.`,
+                    verificationCode: vCode,
+                    platformBio: result.bio // For debugging if needed
+                });
+            }
+        }
+
+        // Check if profile for this platform already exists
+        const existing = await prisma.codingProfile.findFirst({
+            where: { studentId: user.student.id, platform },
+        });
+
+        const statsJson = JSON.stringify(result.stats);
+
+        let profile;
+        if (existing) {
+            profile = await prisma.codingProfile.update({
+                where: { id: existing.id },
+                data: { handle: handle.replace(/^@/, ''), stats: statsJson },
+            });
+        } else {
+            profile = await prisma.codingProfile.create({
+                data: {
+                    studentId: user.student.id,
+                    platform,
+                    handle: handle.replace(/^@/, ''),
+                    stats: statsJson,
+                },
+            });
+        }
+
+        return res.json({
+            id: profile.id,
+            platform: profile.platform,
+            handle: profile.handle,
+            connected: true,
+            verified: true,
+            stats: result.stats,
+        });
+    } catch (error: any) {
+        console.error("Link profile error:", error);
+        return res.status(500).json({ error: "Failed to link profile" });
+    }
+});
+
+// POST /api/students/me/coding-profiles/refresh — re-fetch stats for all linked profiles
+router.post("/me/coding-profiles/refresh", authenticateToken, requireRole("STUDENT"), async (req: AuthRequest, res: Response) => {
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: req.user!.userId },
+            include: { student: { include: { codingProfiles: true } } },
+        });
+
+        if (!user?.student) return res.status(404).json({ error: "Student not found" });
+
+        const updated = [];
+        for (const cp of user.student.codingProfiles) {
+            const result = await fetchPlatformStats(cp.platform, cp.handle);
+            if (result.verified) {
+                await prisma.codingProfile.update({
+                    where: { id: cp.id },
+                    data: { stats: JSON.stringify(result.stats) },
+                });
+                updated.push({ platform: cp.platform, handle: cp.handle, stats: result.stats });
+            } else {
+                updated.push({ platform: cp.platform, handle: cp.handle, stats: JSON.parse(cp.stats) });
+            }
+        }
+
+        return res.json({ refreshed: updated.length, profiles: updated });
+    } catch (error: any) {
+        console.error("Refresh profiles error:", error);
+        return res.status(500).json({ error: "Failed to refresh profiles" });
+    }
+});
+
+// DELETE /api/students/me/coding-profiles/:id — unlink a coding profile
+router.delete("/me/coding-profiles/:id", authenticateToken, requireRole("STUDENT"), async (req: AuthRequest, res: Response) => {
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: req.user!.userId },
+            include: { student: true },
+        });
+
+        if (!user?.student) return res.status(404).json({ error: "Student not found" });
+
+        // Make sure the profile belongs to this student
+        const profile = await prisma.codingProfile.findFirst({
+            where: { id: req.params.id, studentId: user.student.id },
+        });
+
+        if (!profile) return res.status(404).json({ error: "Profile not found" });
+
+        await prisma.codingProfile.delete({ where: { id: profile.id } });
+
+        return res.json({ success: true });
+    } catch (error: any) {
+        console.error("Unlink profile error:", error);
+        return res.status(500).json({ error: "Failed to unlink profile" });
     }
 });
 
