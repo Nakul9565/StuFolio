@@ -375,7 +375,7 @@ const SettingsPage = () => {
                                                                     <p className="text-xs font-semibold text-primary uppercase tracking-wider">Ownership Verification</p>
                                                                 </div>
                                                                 <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-                                                                    To verify this account is yours, please copy the code below and paste it into your <strong>{profile.platform === 'Codeforces' ? 'First Name' : (profile.platform === 'LeetCode' ? 'About Me' : 'Bio')}</strong> section on {profile.platform}.
+                                                                    To verify this account is yours, please copy the code below and paste it into your <strong>{profile.platform === 'Codeforces' ? 'First Name' : (profile.platform === 'CodeChef' ? 'Name' : (profile.platform === 'LeetCode' ? 'About Me' : 'Bio'))}</strong> section on {profile.platform}.
                                                                 </p>
                                                                 <div className="flex items-center justify-between gap-2 p-2 rounded bg-background border border-border group">
                                                                     <code className="text-sm font-mono font-bold text-accent select-all">{vCode || "LOADING..."}</code>

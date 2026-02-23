@@ -181,9 +181,12 @@ async function fetchCodeChef(handle: string): Promise<PlatformStats> {
     const username = handle.replace(/^@/, "");
 
     // CodeChef doesn't have a straightforward public API
-    // We'll do a basic profile page check
+    // We'll do a basic profile page check and try to extract the Name
     try {
         const res = await fetch(`https://www.codechef.com/users/${username}`, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            },
             redirect: "follow",
         });
 
@@ -191,8 +194,14 @@ async function fetchCodeChef(handle: string): Promise<PlatformStats> {
             return { verified: false, stats: [] };
         }
 
+        const html = await res.text();
+        // The name is usually inside an h1 tag
+        const nameMatch = html.match(/<h1[^>]*>([^<]+)<\/h1>/);
+        const bio = nameMatch ? nameMatch[1].trim() : "";
+
         return {
             verified: true,
+            bio,
             stats: [
                 { label: "Username", value: username },
                 { label: "Platform", value: "CodeChef" },
@@ -200,10 +209,9 @@ async function fetchCodeChef(handle: string): Promise<PlatformStats> {
         };
     } catch (err) {
         console.error("CodeChef fetch error:", err);
-        // If we can't verify, still allow linking but note it
         return {
-            verified: true,
-            stats: [{ label: "Username", value: username }],
+            verified: false,
+            stats: [],
         };
     }
 }
