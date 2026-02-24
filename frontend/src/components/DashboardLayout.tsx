@@ -163,7 +163,7 @@ const DashboardLayout = ({ children, title, subtitle, role = "student" }: Dashbo
 
       {/* Main */}
       <main
-        className={`flex-1 transition-all duration-200 min-h-screen ${collapsed ? "lg:ml-[72px]" : "lg:ml-[256px]"
+        className={`flex-1 transition-all duration-200 min-h-screen overflow-x-hidden ${collapsed ? "lg:ml-[72px]" : "lg:ml-[256px]"
           } ml-0`}
       >
         {/* Top Header */}

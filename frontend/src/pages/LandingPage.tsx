@@ -1,4 +1,5 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -109,6 +110,7 @@ const fadeUp = {
 
 const LandingPage = () => {
   const { isAuthenticated, user } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
@@ -144,7 +146,41 @@ const LandingPage = () => {
               </>
             )}
           </div>
+          {/* Mobile hamburger */}
+          <button className="md:hidden text-muted-foreground" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            {mobileMenuOpen ? <span className="text-xl font-bold">✕</span> : <span className="text-xl">☰</span>}
+          </button>
         </div>
+        {/* Mobile dropdown menu */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden border-t border-border/50 overflow-hidden"
+            >
+              <div className="flex flex-col gap-3 px-6 py-4">
+                <a href="#features" onClick={() => setMobileMenuOpen(false)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a>
+                <a href="#testimonials" onClick={() => setMobileMenuOpen(false)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Testimonials</a>
+                <a href="#stats" onClick={() => setMobileMenuOpen(false)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Stats</a>
+                {isAuthenticated ? (
+                  <Link to={user?.role === "MENTOR" ? "/mentor" : "/dashboard"} onClick={() => setMobileMenuOpen(false)}>
+                    <Button size="sm" className="w-full bg-gradient-primary text-white hover:opacity-90 shadow-glow">
+                      Dashboard <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                    <Button size="sm" className="w-full bg-gradient-primary text-white hover:opacity-90 shadow-glow">
+                      Get Started <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       {/* Hero */}
@@ -204,7 +240,7 @@ const LandingPage = () => {
             initial={{ opacity: 0, y: 60 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.8 }}
-            className="mt-20 grid grid-cols-3 gap-4 max-w-3xl mx-auto"
+            className="mt-20 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto"
           >
             {[
               { label: "Performance Index", value: "82.4", change: "+5.2%", color: "text-primary" },

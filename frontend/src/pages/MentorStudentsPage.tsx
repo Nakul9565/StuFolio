@@ -121,15 +121,15 @@ const MentorStudentsPage = () => {
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-6">
-                                            <div className="hidden md:flex items-center gap-8">
+                                        <div className="flex items-center gap-4 sm:gap-6">
+                                            <div className="flex items-center gap-4 sm:gap-8">
                                                 <div className="text-center">
                                                     <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">CGPA</p>
-                                                    <p className="text-sm font-display font-bold text-foreground">{student.cgpa}</p>
+                                                    <p className="text-xs sm:text-sm font-display font-bold text-foreground">{student.cgpa}</p>
                                                 </div>
                                                 <div className="text-center">
-                                                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Attendance</p>
-                                                    <p className={`text-sm font-display font-bold ${student.attendance < 75 ? "text-destructive" : "text-accent"}`}>{student.attendance}%</p>
+                                                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-0.5">Att.</p>
+                                                    <p className={`text-xs sm:text-sm font-display font-bold ${student.attendance < 75 ? "text-destructive" : "text-accent"}`}>{student.attendance}%</p>
                                                 </div>
                                             </div>
 

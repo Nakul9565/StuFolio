@@ -114,12 +114,12 @@ const StudentProfile = () => {
                         <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl bg-gradient-primary flex items-center justify-center text-xl sm:text-2xl font-extrabold text-white border-4 border-card shadow-glow shrink-0">
                             {initials}
                         </div>
-                        <div className="flex-1 min-w-0">
+                        <div className="flex-1 min-w-0 overflow-hidden">
                             <h2 className="text-xl sm:text-2xl font-display font-bold text-foreground truncate">{profile.name}</h2>
-                            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-4 gap-y-1 mt-1">
-                                <span className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground"><Hash className="h-3 w-3" />{profile.enrollment}</span>
-                                <span className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground"><Mail className="h-3 w-3" />{profile.email}</span>
-                                <span className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground"><MapPin className="h-3 w-3" />{profile.section} · {profile.year}</span>
+                            <div className="flex flex-col sm:flex-row sm:flex-wrap items-center sm:items-start gap-1 sm:gap-x-4 sm:gap-y-1 mt-1">
+                                <span className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground truncate max-w-full"><Hash className="h-3 w-3 shrink-0" /><span className="truncate">{profile.enrollment}</span></span>
+                                <span className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground truncate max-w-full"><Mail className="h-3 w-3 shrink-0" /><span className="truncate">{profile.email}</span></span>
+                                <span className="flex items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground truncate max-w-full"><MapPin className="h-3 w-3 shrink-0" /><span className="truncate">{profile.section} · {profile.year}</span></span>
                             </div>
                         </div>
                         <div className="flex gap-2 sm:gap-4 w-full sm:w-auto mt-2 sm:mt-0">
@@ -165,13 +165,13 @@ const StudentProfile = () => {
                         ))}
                     </div>
                     <div className="mt-4 pt-4 border-t border-border">
-                        <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Branch</span>
-                            <span className="text-foreground font-medium">{profile.branch}</span>
+                        <div className="flex justify-between gap-4 text-sm">
+                            <span className="text-muted-foreground shrink-0">Branch</span>
+                            <span className="text-foreground font-medium truncate text-right">{profile.branch}</span>
                         </div>
-                        <div className="flex justify-between text-sm mt-2">
-                            <span className="text-muted-foreground">Semester</span>
-                            <span className="text-foreground font-medium">{profile.semester}</span>
+                        <div className="flex justify-between gap-4 text-sm mt-2">
+                            <span className="text-muted-foreground shrink-0">Semester</span>
+                            <span className="text-foreground font-medium truncate text-right">{profile.semester}</span>
                         </div>
                     </div>
                 </motion.div>
@@ -186,18 +186,18 @@ const StudentProfile = () => {
                     {codingProfiles.map((p) => {
                         const colors = colorMap[p.platform] || { color: "text-primary", bg: "bg-primary/10 border-primary/20" };
                         return (
-                            <div key={p.platform} className={`rounded-xl border p-5 ${colors.bg}`}>
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="flex items-center gap-2">
-                                        <span className={`font-display font-bold text-base ${colors.color}`}>{p.platform}</span>
-                                        <span className="text-xs text-muted-foreground">{p.handle}</span>
+                            <div key={p.platform} className={`rounded-xl border p-4 sm:p-5 ${colors.bg} overflow-hidden`}>
+                                <div className="flex items-center justify-between mb-3 gap-2">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <span className={`font-display font-bold text-sm sm:text-base ${colors.color} shrink-0`}>{p.platform}</span>
+                                        <span className="text-xs text-muted-foreground truncate">{p.handle}</span>
                                     </div>
-                                    <ExternalLink className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer" />
+                                    <ExternalLink className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-pointer shrink-0" />
                                 </div>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div className="grid grid-cols-2 gap-2 sm:gap-3 sm:grid-cols-3 md:grid-cols-4">
                                     {p.stats?.map((stat) => (
-                                        <div key={stat.label} className="bg-white/5 p-2 rounded-lg border border-current/5">
-                                            <p className="text-[10px] sm:text-[11px] text-muted-foreground opacity-80">{stat.label}</p>
+                                        <div key={stat.label} className="bg-white/5 p-2 rounded-lg border border-current/5 min-w-0">
+                                            <p className="text-[10px] sm:text-[11px] text-muted-foreground opacity-80 truncate">{stat.label}</p>
                                             <p className="text-xs sm:text-sm font-bold text-foreground truncate">{stat.value}</p>
                                         </div>
                                     ))}
@@ -218,15 +218,15 @@ const StudentProfile = () => {
                 <h3 className="font-display font-semibold text-foreground mb-1">Activity Heatmap</h3>
                 <p className="text-xs text-muted-foreground mb-4">Your problem-solving activity over the past year</p>
                 <div className="relative">
-                    <div className="overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
-                        <div className="flex gap-[3px] min-w-[max-content] md:min-w-0 md:justify-between pr-4">
+                    <div className="overflow-x-auto pb-2">
+                        <div className="flex gap-[2px] sm:gap-[3px]" style={{ width: 'max-content' }}>
                             {activityGrid.map((week, wi) => (
-                                <div key={wi} className="flex flex-col gap-[3px] shrink-0">
+                                <div key={wi} className="flex flex-col gap-[2px] sm:gap-[3px]">
                                     {week.map((day, di) => (
                                         <div
                                             key={di}
                                             title={`${day.count} submissions on ${day.date}`}
-                                            className={`h-[10px] w-[10px] sm:h-[11px] sm:w-[11px] rounded-[2px] transition-all hover:ring-1 hover:ring-primary/50 cursor-pointer group relative ${day.count === 0 ? "bg-secondary" :
+                                            className={`h-[9px] w-[9px] sm:h-[11px] sm:w-[11px] rounded-[2px] transition-all hover:ring-1 hover:ring-primary/50 cursor-pointer group relative ${day.count === 0 ? "bg-secondary" :
                                                 day.count === 1 ? "bg-primary/20" :
                                                     day.count === 2 ? "bg-primary/40" :
                                                         day.count === 3 ? "bg-primary/60" :
@@ -242,8 +242,8 @@ const StudentProfile = () => {
                             ))}
                         </div>
                     </div>
-                    {/* Visual fade effect to indicate more content on small screens */}
-                    <div className="absolute right-0 top-0 bottom-4 w-12 bg-gradient-to-l from-card to-transparent pointer-events-none md:hidden" />
+                    {/* Visual fade effect to indicate scrollability on small screens */}
+                    <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-card to-transparent pointer-events-none sm:hidden" />
                 </div>
             </motion.div>
 
