@@ -29,11 +29,6 @@ npm install
 npm run dev                # Start dev server on port 8080
 ```
 
-### Demo Accounts
-| Role | Email | Password |
-|------|-------|----------|
-| Student | nakul.gupta@campus.edu | password123 |
-| Mentor | dr.sharma@campus.edu | password123 |
 
 ## API Endpoints
 
