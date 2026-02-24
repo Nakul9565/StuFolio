@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Trophy,
@@ -23,6 +23,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import NotificationCenter from "./NotificationCenter";
+import { useAuth } from "@/contexts/AuthContext";
 
 const studentNavItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -56,6 +57,13 @@ const DashboardLayout = ({ children, title, subtitle, role = "student" }: Dashbo
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   const navItems = role === "mentor" ? mentorNavItems : studentNavItems;
 
@@ -142,13 +150,13 @@ const DashboardLayout = ({ children, title, subtitle, role = "student" }: Dashbo
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
             {!collapsed && <span>Collapse</span>}
           </button>
-          <Link
-            to="/"
-            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all"
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all"
           >
             <LogOut className="h-4 w-4 shrink-0" />
             {!collapsed && <span>Log out</span>}
-          </Link>
+          </button>
         </div>
       </motion.aside>
 
