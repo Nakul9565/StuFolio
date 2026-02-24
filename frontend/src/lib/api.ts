@@ -19,7 +19,10 @@ export interface CodingProfile {
     platform: string;
     handle: string;
     stats: { label: string; value: string }[];
-    activityData: Record<string, number>;
+    activityData?: Record<string, number>;
+    connected?: boolean;
+    verified?: boolean;
+    lastSynced?: string | Date;
 }
 
 export interface Profile {
@@ -168,7 +171,7 @@ class ApiClient {
     }
 
     refreshCodingProfiles() {
-        return this.request<unknown>("/students/me/coding-profiles/refresh", {
+        return this.request<{ profiles: CodingProfile[]; refreshed: number }>("/students/me/coding-profiles/refresh", {
             method: "POST",
         });
     }
@@ -207,7 +210,7 @@ class ApiClient {
     }
 
     getMentorSubjects() {
-        return this.request<any[]>("/mentor/subjects");
+        return this.request<{ id: string; name: string; code: string; semester: string }[]>("/mentor/subjects");
     }
 
     submitDailyAttendance(subjectId: string, date: string, records: { studentId: string; status: string }[]) {
@@ -221,6 +224,58 @@ class ApiClient {
         return this.request<unknown>(`/mentor/students/${studentId}/academics`, {
             method: "PATCH",
             body: JSON.stringify(data),
+        });
+    }
+
+    getMentorProfile() {
+        return this.request<{
+            profile: {
+                id: string;
+                name: string;
+                email: string;
+                teacherId: string | null;
+                department: string;
+                designation: string;
+                section: string;
+            }
+        }>("/mentor/profile");
+    }
+
+    updateMentorProfile(data: {
+        name?: string;
+        teacherId?: string;
+        department?: string;
+        designation?: string;
+        section?: string;
+    }) {
+        return this.request<{
+            profile: {
+                id: string;
+                name: string;
+                email: string;
+                teacherId: string | null;
+                department: string;
+                designation: string;
+                section: string;
+            }
+        }>("/mentor/profile", {
+            method: "PATCH",
+            body: JSON.stringify(data),
+        });
+    }
+
+    getAttendanceForDay(date: string) {
+        return this.request<{
+            students: { id: string; name: string; enrollment: string }[];
+            subjects: { id: string; name: string; code: string; semester: string }[];
+            records: { studentId: string; subjectId: string; status: string }[];
+        }>(`/mentor/attendance/day?date=${date}`);
+    }
+
+    submitAttendanceForDay(date: string, records: { studentId: string; subjectId: string; status: string }[]) {
+        return this.request<{ success: boolean }>("/mentor/attendance/day", {
+            method: "POST",
+            body: JSON.stringify({ date, records }),
         });
     }
 

@@ -27,12 +27,12 @@ async function main() {
 
     // ─── Create Subjects ──────────────────────────────
     const subjectsData = [
-        { name: "Data Structures & Algorithms", code: "CS301", semester: "5th Semester" },
-        { name: "Operating Systems", code: "CS302", semester: "5th Semester" },
-        { name: "Database Management Systems", code: "CS303", semester: "5th Semester" },
-        { name: "Computer Networks", code: "CS304", semester: "5th Semester" },
-        { name: "Object Oriented Programming", code: "CS305", semester: "5th Semester" },
-        { name: "Software Engineering", code: "CS306", semester: "5th Semester" },
+        { name: "Probability Statistics And Linear Programming", code: "BS202", semester: "4th Semester" },
+        { name: "Technical Writing", code: "HS204", semester: "4th Semester" },
+        { name: "Theory Of Computation", code: "CS206", semester: "4th Semester" },
+        { name: "Circuits And Systems", code: "CS208", semester: "4th Semester" },
+        { name: "Database Management System", code: "CS210", semester: "4th Semester" },
+        { name: "Programming In Java", code: "CS212", semester: "4th Semester" },
     ];
 
     for (const s of subjectsData) {

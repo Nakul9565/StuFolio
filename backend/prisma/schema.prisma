@@ -39,7 +39,7 @@ model Student {
   semesterCGPAs  SemesterCGPA[]
   academicRecords AcademicRecord[]
   attendances    Attendance[]
-  dailyAttendance DailyAttendance[]
+  dailyAttendances DailyAttendance[]
   codingProfiles CodingProfile[]
   badges         Badge[]
   skills         StudentSkill[]
@@ -51,10 +51,11 @@ model Mentor {
   id          String @id @default(uuid())
   userId      String @unique
   user        User   @relation(fields: [userId], references: [id])
+  teacherId   String? @unique
   department  String
   designation String
   section     String // Section this mentor oversees
-  dailyAttendance DailyAttendance[]
+  dailyAttendances DailyAttendance[]
 }
 
 // ─── Academic ────────────────────────────────────────────
@@ -65,7 +66,7 @@ model Subject {
   semester        String
   academicRecords AcademicRecord[]
   attendances     Attendance[]
-  dailyAttendance DailyAttendance[]
+  dailyAttendances DailyAttendance[]
 }
 
 model SemesterCGPA {

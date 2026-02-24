@@ -1,5 +1,6 @@
 import { Router, Response } from "express";
 import prisma from "../lib/prisma";
+import { Prisma } from "@prisma/client";
 import { AuthRequest, authenticateToken, requireRole } from "../middleware/auth";
 
 const router = Router();
@@ -122,11 +123,11 @@ router.get("/students", authenticateToken, requireRole("MENTOR"), async (req: Au
 
         if (!mentor) return res.status(404).json({ error: "Mentor not found" });
 
-        const where: any = { section: mentor.section };
-        if (section) where.section = section;
-        if (semester) where.semester = semester;
+        const where: Prisma.StudentWhereInput = { section: mentor.section };
+        if (section) where.section = section as string;
+        if (semester) where.semester = semester as string;
         if (search) {
-            where.user = { name: { contains: String(search) } };
+            where.user = { name: { contains: String(search), mode: 'insensitive' } };
         }
 
         const students = await prisma.student.findMany({
@@ -201,11 +202,12 @@ router.post("/attendance/daily", authenticateToken, requireRole("MENTOR"), async
         if (!mentor) return res.status(404).json({ error: "Mentor not found" });
 
         const attendanceDate = new Date(date);
-        attendanceDate.setHours(0, 0, 0, 0);
+        attendanceDate.setUTCHours(0, 0, 0, 0);
 
         // Transaction to ensure atomicity
-        await prisma.$transaction(async (tx) => {
-            for (const record of records) {
+        await prisma.$transaction(async (tx: any) => {
+            const typedRecords = records as { studentId: string, status: string }[];
+            for (const record of typedRecords) {
                 // 1. Log daily attendance
                 const existing = await tx.dailyAttendance.findUnique({
                     where: {
@@ -223,7 +225,7 @@ router.post("/attendance/daily", authenticateToken, requireRole("MENTOR"), async
                         // Update summary if status changed
                         const updateData: any = {};
                         if (record.status === "PRESENT") updateData.attended = { increment: 1 };
-                        else updateData.attended = { decrement: 1 };
+                        else if (existing.status === "PRESENT") updateData.attended = { decrement: 1 };
 
                         await tx.attendance.update({
                             where: { studentId_subjectId: { studentId: record.studentId, subjectId } },
@@ -268,6 +270,149 @@ router.post("/attendance/daily", authenticateToken, requireRole("MENTOR"), async
     } catch (error: any) {
         console.error("Daily attendance error:", error);
         return res.status(500).json({ error: "Failed to submit attendance" });
+    }
+});
+
+// GET /api/mentor/attendance/day — multi-subject grid data
+router.get("/attendance/day", authenticateToken, requireRole("MENTOR"), async (req: AuthRequest, res: Response) => {
+    try {
+        const { date } = req.query;
+        if (!date) return res.status(400).json({ error: "Date is required" });
+
+        const mentor = await prisma.mentor.findUnique({
+            where: { userId: req.user!.userId },
+        });
+
+        if (!mentor) return res.status(404).json({ error: "Mentor not found" });
+
+        // Get all students in mentor's section
+        const students = await prisma.student.findMany({
+            where: { section: mentor.section },
+            select: { id: true, user: { select: { name: true } }, enrollment: true }
+        });
+
+        // Get all subjects (4th semester as requested)
+        const subjects = await prisma.subject.findMany({
+            where: { semester: "4th Semester" },
+            orderBy: { code: "asc" }
+        });
+
+        const attendanceDate = new Date(date as string);
+        attendanceDate.setUTCHours(0, 0, 0, 0);
+
+        const nextDay = new Date(attendanceDate);
+        nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+
+        const records = await (prisma as any).dailyAttendance.findMany({
+            where: {
+                date: { gte: attendanceDate, lt: nextDay },
+                studentId: { in: students.map(s => s.id) },
+                subjectId: { in: subjects.map(s => s.id) }
+            },
+            select: { studentId: true, subjectId: true, status: true }
+        });
+
+        // Map students to align with the frontend expectation
+        const studentList = students.map(s => ({
+            id: s.id,
+            name: s.user.name,
+            enrollment: s.enrollment
+        }));
+
+        return res.json({
+            students: studentList,
+            subjects,
+            records
+        });
+    } catch (error: any) {
+        console.error("Day attendance fetch error:", error);
+        return res.status(500).json({ error: "Failed to fetch attendance data" });
+    }
+});
+
+// POST /api/mentor/attendance/day — bulk update for all subjects
+router.post("/attendance/day", authenticateToken, requireRole("MENTOR"), async (req: AuthRequest, res: Response) => {
+    try {
+        const { date, records } = req.body; // records: [{studentId, subjectId, status}]
+        if (!date || !records) return res.status(400).json({ error: "Date and records are required" });
+
+        const mentor = await prisma.mentor.findUnique({
+            where: { userId: req.user!.userId },
+        });
+
+        if (!mentor) return res.status(404).json({ error: "Mentor not found" });
+
+        const attendanceDate = new Date(date);
+        attendanceDate.setUTCHours(0, 0, 0, 0);
+
+        console.log(`[DEBUG] Bulk attendance submit for date: ${attendanceDate.toISOString()}, records: ${records.length}`);
+
+        await prisma.$transaction(async (tx: any) => {
+            for (const record of records) {
+                const { studentId, subjectId, status } = record;
+
+                // 1. Get existing record to know the transition
+                const existing = await tx.dailyAttendance.findUnique({
+                    where: {
+                        studentId_subjectId_date: { studentId, subjectId, date: attendanceDate }
+                    }
+                });
+
+                const oldStatus = existing ? existing.status : "NO_CLASS";
+                const newStatus = status;
+
+                if (oldStatus === newStatus) continue;
+
+                // 2. Update DailyAttendance
+                if (newStatus === "NO_CLASS") {
+                    if (existing) {
+                        await tx.dailyAttendance.delete({ where: { id: existing.id } });
+                    }
+                } else {
+                    await tx.dailyAttendance.upsert({
+                        where: { studentId_subjectId_date: { studentId, subjectId, date: attendanceDate } },
+                        create: { studentId, subjectId, date: attendanceDate, status: newStatus, mentorId: mentor.id },
+                        update: { status: newStatus }
+                    });
+                }
+
+                // 3. Update summary (Attendance table)
+                const updateData: any = {};
+                let createData = { studentId, subjectId, total: 1, attended: 0 };
+
+                if (oldStatus === "NO_CLASS") {
+                    updateData.total = { increment: 1 };
+                    if (newStatus === "PRESENT") {
+                        updateData.attended = { increment: 1 };
+                        createData.attended = 1;
+                    }
+                } else if (newStatus === "NO_CLASS") {
+                    updateData.total = { decrement: 1 };
+                    if (oldStatus === "PRESENT") updateData.attended = { decrement: 1 };
+                } else {
+                    if (oldStatus === "PRESENT" && newStatus === "ABSENT") updateData.attended = { decrement: 1 };
+                    if (oldStatus === "ABSENT" && newStatus === "PRESENT") updateData.attended = { increment: 1 };
+                }
+
+                if (Object.keys(updateData).length > 0) {
+                    await tx.attendance.upsert({
+                        where: { studentId_subjectId: { studentId, subjectId } },
+                        create: createData,
+                        update: updateData
+                    });
+                }
+            }
+        });
+
+        return res.json({ success: true });
+    } catch (error: any) {
+        console.error("Day attendance submit error detailed:", {
+            message: error.message,
+            stack: error.stack,
+            code: error.code,
+            meta: error.meta
+        });
+        return res.status(500).json({ error: error.message || "Failed to submit attendance data" });
     }
 });
 
@@ -370,6 +515,76 @@ router.get("/analytics", authenticateToken, requireRole("MENTOR"), async (req: A
     } catch (error: any) {
         console.error("Analytics error:", error);
         return res.status(500).json({ error: "Failed to load analytics" });
+    }
+});
+
+// GET /api/mentor/profile — fetch mentor profile
+router.get("/profile", authenticateToken, requireRole("MENTOR"), async (req: AuthRequest, res: Response) => {
+    try {
+        const mentor = await prisma.mentor.findUnique({
+            where: { userId: req.user!.userId },
+            include: { user: { select: { name: true, email: true } } },
+        });
+
+        if (!mentor) return res.status(404).json({ error: "Mentor not found" });
+
+        return res.json({
+            profile: {
+                id: mentor.id,
+                name: (mentor as any).user.name,
+                email: (mentor as any).user.email,
+                teacherId: (mentor as any).teacherId,
+                department: mentor.department,
+                designation: mentor.designation,
+                section: mentor.section,
+            }
+        });
+    } catch (error: any) {
+        console.error("Mentor profile fetch error:", error);
+        return res.status(500).json({ error: "Failed to fetch mentor profile" });
+    }
+});
+
+// PATCH /api/mentor/profile — update mentor profile
+router.patch("/profile", authenticateToken, requireRole("MENTOR"), async (req: AuthRequest, res: Response) => {
+    try {
+        const { name, teacherId, department, designation, section } = req.body;
+        const mentor = await prisma.mentor.findUnique({
+            where: { userId: req.user!.userId },
+            include: { user: { select: { name: true, email: true } } },
+        });
+
+        if (!mentor) return res.status(404).json({ error: "Mentor not found" });
+
+        const updatedMentor = await prisma.mentor.update({
+            where: { id: mentor.id },
+            data: {
+                teacherId,
+                department,
+                designation,
+                section,
+                user: name ? { update: { name } } : undefined,
+            } as any,
+            include: { user: { select: { name: true, email: true } } },
+        });
+
+        return res.json({
+            profile: {
+                id: updatedMentor.id,
+                name: (updatedMentor as any).user.name,
+                email: (updatedMentor as any).user.email,
+                teacherId: (updatedMentor as any).teacherId,
+                department: updatedMentor.department,
+                designation: updatedMentor.designation,
+                section: updatedMentor.section,
+            }
+        });
+    } catch (error: any) {
+        console.error("Mentor profile update error:", error);
+        if (error.code === 'P2002') {
+            return res.status(400).json({ error: "Teacher ID already exists" });
+        }
+        return res.status(500).json({ error: "Failed to update mentor profile" });
     }
 });
 

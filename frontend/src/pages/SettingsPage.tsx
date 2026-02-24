@@ -25,9 +25,9 @@ interface CodingProfile {
     id: string | null;
     platform: string;
     handle: string;
-    connected: boolean;
+    connected?: boolean;
     verified?: boolean;
-    lastSynced?: string;
+    lastSynced?: string | Date;
     stats?: { label: string; value: string }[];
 }
 
@@ -81,18 +81,18 @@ const SettingsPage = () => {
         semester: "",
         year: "",
         cgpa: "",
+        // Mentor specific
+        teacherId: "",
+        department: "",
+        designation: "",
     });
     const [savingProfile, setSavingProfile] = useState(false);
 
     const role = user?.role === "MENTOR" ? "mentor" : "student";
 
-    // Fetch linked coding profiles and verification code
+    // Fetch data based on role
     useEffect(() => {
-        if (role !== "student") {
-            setLoadingProfiles(false);
-            return;
-        }
-        const fetchData = async () => {
+        const fetchStudentData = async () => {
             try {
                 const [profilesData, codeData, profileResult] = await Promise.all([
                     api.getCodingProfiles(),
@@ -112,15 +112,48 @@ const SettingsPage = () => {
                         semester: p.semester || "",
                         year: p.year || "",
                         cgpa: p.cgpa?.toString() || "",
+                        teacherId: "",
+                        department: "",
+                        designation: "",
                     });
                 }
             } catch (err) {
-                console.error("Failed to load settings data:", err);
+                console.error("Failed to load student settings data:", err);
             } finally {
                 setLoadingProfiles(false);
             }
         };
-        fetchData();
+
+        const fetchMentorData = async () => {
+            try {
+                const result = await api.getMentorProfile();
+                if (result && result.profile) {
+                    const p = result.profile;
+                    setProfileForm({
+                        name: p.name || "",
+                        teacherId: p.teacherId || "",
+                        department: p.department || "",
+                        designation: p.designation || "",
+                        section: p.section || "",
+                        enrollment: "",
+                        branch: "",
+                        semester: "",
+                        year: "",
+                        cgpa: "",
+                    });
+                }
+            } catch (err) {
+                console.error("Failed to load mentor profile:", err);
+            } finally {
+                setLoadingProfiles(false);
+            }
+        };
+
+        if (role === "student") {
+            fetchStudentData();
+        } else {
+            fetchMentorData();
+        }
     }, [role]);
 
     const showSuccess = (msg: string) => {
@@ -187,14 +220,15 @@ const SettingsPage = () => {
             if (result.profiles) {
                 setProfiles((prev) =>
                     prev.map((p) => {
-                        const refreshed = result.profiles.find((r: any) => r.platform === p.platform);
+                        const refreshed = result.profiles.find((r) => r.platform === p.platform);
                         return refreshed ? { ...p, stats: refreshed.stats } : p;
                     })
                 );
             }
             showSuccess(`Stats refreshed for ${result.refreshed} profile(s)!`);
-        } catch (err: any) {
-            showError(err.message || "Failed to refresh stats.");
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : "Failed to refresh stats.";
+            showError(errorMessage);
         } finally {
             setRefreshing(false);
         }
@@ -203,11 +237,21 @@ const SettingsPage = () => {
     const handleSaveProfile = async () => {
         setSavingProfile(true);
         try {
-            await api.updateStudentProfile(profileForm);
+            if (role === "student") {
+                await api.updateStudentProfile(profileForm);
+            } else {
+                await api.updateMentorProfile({
+                    name: profileForm.name,
+                    teacherId: profileForm.teacherId,
+                    department: profileForm.department,
+                    designation: profileForm.designation,
+                    section: profileForm.section,
+                });
+            }
             showSuccess("Profile information updated successfully!");
-            // Optional: refresh page or update auth context if needed
-        } catch (err: any) {
-            showError(err.message || "Failed to update profile.");
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : "Failed to update profile.";
+            showError(errorMessage);
         } finally {
             setSavingProfile(false);
         }
@@ -295,56 +339,97 @@ const SettingsPage = () => {
                                 className="bg-secondary/50 border-border"
                             />
                         </div>
-                        <div>
-                            <label className="text-xs text-muted-foreground mb-1 block">Enrollment Number</label>
-                            <Input
-                                value={profileForm.enrollment}
-                                onChange={(e) => setProfileForm(p => ({ ...p, enrollment: e.target.value }))}
-                                className="bg-secondary/50 border-border"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-xs text-muted-foreground mb-1 block">Branch</label>
-                            <Input
-                                value={profileForm.branch}
-                                onChange={(e) => setProfileForm(p => ({ ...p, branch: e.target.value }))}
-                                className="bg-secondary/50 border-border"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-xs text-muted-foreground mb-1 block">Section</label>
-                            <Input
-                                value={profileForm.section}
-                                onChange={(e) => setProfileForm(p => ({ ...p, section: e.target.value }))}
-                                className="bg-secondary/50 border-border"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-xs text-muted-foreground mb-1 block">Semester</label>
-                            <Input
-                                value={profileForm.semester}
-                                onChange={(e) => setProfileForm(p => ({ ...p, semester: e.target.value }))}
-                                className="bg-secondary/50 border-border"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-xs text-muted-foreground mb-1 block">Academic Year</label>
-                            <Input
-                                value={profileForm.year}
-                                onChange={(e) => setProfileForm(p => ({ ...p, year: e.target.value }))}
-                                className="bg-secondary/50 border-border"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-xs text-muted-foreground mb-1 block">Current CGPA</label>
-                            <Input
-                                type="number"
-                                step="0.01"
-                                value={profileForm.cgpa}
-                                onChange={(e) => setProfileForm(p => ({ ...p, cgpa: e.target.value }))}
-                                className="bg-secondary/50 border-border"
-                            />
-                        </div>
+                        {role === "student" ? (
+                            <>
+                                <div>
+                                    <label className="text-xs text-muted-foreground mb-1 block">Enrollment Number</label>
+                                    <Input
+                                        value={profileForm.enrollment}
+                                        onChange={(e) => setProfileForm(p => ({ ...p, enrollment: e.target.value }))}
+                                        className="bg-secondary/50 border-border"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-muted-foreground mb-1 block">Branch</label>
+                                    <Input
+                                        value={profileForm.branch}
+                                        onChange={(e) => setProfileForm(p => ({ ...p, branch: e.target.value }))}
+                                        className="bg-secondary/50 border-border"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-muted-foreground mb-1 block">Section</label>
+                                    <Input
+                                        value={profileForm.section}
+                                        onChange={(e) => setProfileForm(p => ({ ...p, section: e.target.value }))}
+                                        className="bg-secondary/50 border-border"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-muted-foreground mb-1 block">Semester</label>
+                                    <Input
+                                        value={profileForm.semester}
+                                        onChange={(e) => setProfileForm(p => ({ ...p, semester: e.target.value }))}
+                                        className="bg-secondary/50 border-border"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-muted-foreground mb-1 block">Academic Year</label>
+                                    <Input
+                                        value={profileForm.year}
+                                        onChange={(e) => setProfileForm(p => ({ ...p, year: e.target.value }))}
+                                        className="bg-secondary/50 border-border"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-muted-foreground mb-1 block">Current CGPA</label>
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        value={profileForm.cgpa}
+                                        onChange={(e) => setProfileForm(p => ({ ...p, cgpa: e.target.value }))}
+                                        className="bg-secondary/50 border-border"
+                                    />
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div>
+                                    <label className="text-xs text-muted-foreground mb-1 block">Teacher ID</label>
+                                    <Input
+                                        value={profileForm.teacherId}
+                                        onChange={(e) => setProfileForm(p => ({ ...p, teacherId: e.target.value }))}
+                                        className="bg-secondary/50 border-border"
+                                        placeholder="Enter your unique teacher ID"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-muted-foreground mb-1 block">Department</label>
+                                    <Input
+                                        value={profileForm.department}
+                                        onChange={(e) => setProfileForm(p => ({ ...p, department: e.target.value }))}
+                                        className="bg-secondary/50 border-border"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-muted-foreground mb-1 block">Designation</label>
+                                    <Input
+                                        value={profileForm.designation}
+                                        onChange={(e) => setProfileForm(p => ({ ...p, designation: e.target.value }))}
+                                        className="bg-secondary/50 border-border"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-muted-foreground mb-1 block">Mentoring Section (Class)</label>
+                                    <Input
+                                        value={profileForm.section}
+                                        onChange={(e) => setProfileForm(p => ({ ...p, section: e.target.value }))}
+                                        className="bg-secondary/50 border-border"
+                                        placeholder="e.g. CSE-B"
+                                    />
+                                </div>
+                            </>
+                        )}
                     </div>
                     <button
                         onClick={handleSaveProfile}
