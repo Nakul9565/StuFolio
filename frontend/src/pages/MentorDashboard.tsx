@@ -270,7 +270,7 @@ const MentorDashboard = () => {
             return (
               <Link
                 key={student.id || student.name}
-                to={`/mentor/students?name=${encodeURIComponent(student.name)}`}
+                to={`/mentor/student-detail?id=${student.id}`}
                 className="flex items-center justify-between px-4 py-3.5 hover:bg-secondary/30 transition-colors"
               >
                 <div className="flex items-center gap-3">

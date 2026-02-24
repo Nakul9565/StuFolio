@@ -161,6 +161,162 @@ router.get("/students", authenticateToken, requireRole("MENTOR"), async (req: Au
     }
 });
 
+// GET /api/mentor/subjects — subjects for the mentor's section
+router.get("/subjects", authenticateToken, requireRole("MENTOR"), async (req: AuthRequest, res: Response) => {
+    try {
+        const mentor = await prisma.mentor.findUnique({
+            where: { userId: req.user!.userId },
+        });
+
+        if (!mentor) return res.status(404).json({ error: "Mentor not found" });
+
+        // Fetch students in this section to find their semester
+        const student = await prisma.student.findFirst({
+            where: { section: mentor.section },
+            select: { semester: true }
+        });
+
+        if (!student) return res.json([]); // No students, no subjects needed yet
+
+        const subjects = await prisma.subject.findMany({
+            where: { semester: student.semester },
+            orderBy: { name: "asc" }
+        });
+
+        return res.json(subjects);
+    } catch (error: any) {
+        console.error("Mentor subjects error:", error);
+        return res.status(500).json({ error: "Failed to load subjects" });
+    }
+});
+
+// POST /api/mentor/attendance/daily — submit daily attendance
+router.post("/attendance/daily", authenticateToken, requireRole("MENTOR"), async (req: AuthRequest, res: Response) => {
+    try {
+        const { subjectId, date, records } = req.body; // records: [{studentId, status}]
+        const mentor = await prisma.mentor.findUnique({
+            where: { userId: req.user!.userId },
+        });
+
+        if (!mentor) return res.status(404).json({ error: "Mentor not found" });
+
+        const attendanceDate = new Date(date);
+        attendanceDate.setHours(0, 0, 0, 0);
+
+        // Transaction to ensure atomicity
+        await prisma.$transaction(async (tx) => {
+            for (const record of records) {
+                // 1. Log daily attendance
+                const existing = await tx.dailyAttendance.findUnique({
+                    where: {
+                        studentId_subjectId_date: {
+                            studentId: record.studentId,
+                            subjectId,
+                            date: attendanceDate,
+                        }
+                    }
+                });
+
+                if (existing) {
+                    // Update existing
+                    if (existing.status !== record.status) {
+                        // Update summary if status changed
+                        const updateData: any = {};
+                        if (record.status === "PRESENT") updateData.attended = { increment: 1 };
+                        else updateData.attended = { decrement: 1 };
+
+                        await tx.attendance.update({
+                            where: { studentId_subjectId: { studentId: record.studentId, subjectId } },
+                            data: updateData
+                        });
+                    }
+                    await tx.dailyAttendance.update({
+                        where: { id: existing.id },
+                        data: { status: record.status }
+                    });
+                } else {
+                    // Create new
+                    await tx.dailyAttendance.create({
+                        data: {
+                            studentId: record.studentId,
+                            subjectId,
+                            date: attendanceDate,
+                            status: record.status,
+                            mentorId: mentor.id
+                        }
+                    });
+
+                    // Update summary
+                    await tx.attendance.upsert({
+                        where: { studentId_subjectId: { studentId: record.studentId, subjectId } },
+                        create: {
+                            studentId: record.studentId,
+                            subjectId,
+                            attended: record.status === "PRESENT" ? 1 : 0,
+                            total: 1
+                        },
+                        update: {
+                            total: { increment: 1 },
+                            attended: record.status === "PRESENT" ? { increment: 1 } : undefined
+                        }
+                    });
+                }
+            }
+        });
+
+        return res.json({ message: "Attendance recorded successfully" });
+    } catch (error: any) {
+        console.error("Daily attendance error:", error);
+        return res.status(500).json({ error: "Failed to submit attendance" });
+    }
+});
+
+// PATCH /api/mentor/students/:id/academics — update student marks
+router.patch("/students/:id/academics", authenticateToken, requireRole("MENTOR"), async (req: AuthRequest, res: Response) => {
+    try {
+        const studentId = req.params.id;
+        const { subjectId, marks, semester } = req.body;
+
+        const record = await prisma.academicRecord.upsert({
+            where: {
+                studentId_subjectId_semester: {
+                    studentId,
+                    subjectId,
+                    semester
+                }
+            },
+            create: {
+                studentId,
+                subjectId,
+                marks,
+                semester,
+                maxMarks: 100
+            },
+            update: {
+                marks
+            }
+        });
+
+        // Recalculate CGPA (simplified: average of all records)
+        const allRecords = await prisma.academicRecord.findMany({
+            where: { studentId }
+        });
+        const totalMarksPercent = allRecords.reduce((sum, r) => sum + (r.marks / r.maxMarks), 0);
+        const avgPercent = (totalMarksPercent / allRecords.length) * 100;
+        const newCGPA = Number((avgPercent / 10).toFixed(2)); // basic conversion
+
+        await prisma.student.update({
+            where: { id: studentId },
+            data: { cgpa: newCGPA }
+        });
+
+        return res.json({ record, newCGPA });
+    } catch (error: any) {
+        console.error("Academic update error:", error);
+        return res.status(500).json({ error: "Failed to update marks" });
+    }
+});
+
 // GET /api/mentor/analytics — batch analytics
 router.get("/analytics", authenticateToken, requireRole("MENTOR"), async (req: AuthRequest, res: Response) => {
     try {

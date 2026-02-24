@@ -37,7 +37,7 @@ router.post("/register", async (req: Request, res: Response) => {
                     student: {
                         create: {
                             enrollment: enrollment || `STU-${Date.now()}`,
-                            section: section || "CS-A",
+                            section: section || "CSE-B",
                             semester: semester || "1st Semester",
                             branch: branch || "Computer Science & Engineering",
                             year: year || "1st Year",
@@ -49,7 +49,7 @@ router.post("/register", async (req: Request, res: Response) => {
                         create: {
                             department: department || "Computer Science",
                             designation: designation || "Assistant Professor",
-                            section: section || "CS-A",
+                            section: section || "CSE-B",
                         },
                     },
                 }),

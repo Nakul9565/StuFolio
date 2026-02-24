@@ -15,8 +15,11 @@ import AttendancePage from "./pages/AttendancePage";
 import CareerPage from "./pages/CareerPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import MentorDashboard from "./pages/MentorDashboard";
+import MentorStudentsPage from "./pages/MentorStudentsPage";
 import MentorStudentDetail from "./pages/MentorStudentDetail";
 import MentorAnalytics from "./pages/MentorAnalytics";
+import MentorAttendancePage from "./pages/MentorAttendancePage";
+import MentorAcademicRecordsPage from "./pages/MentorAcademicRecordsPage";
 import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
 
@@ -46,7 +49,10 @@ const App = () => (
 
             {/* Mentor */}
             <Route path="/mentor" element={<ProtectedRoute requiredRole="MENTOR"><MentorDashboard /></ProtectedRoute>} />
-            <Route path="/mentor/students" element={<ProtectedRoute requiredRole="MENTOR"><MentorStudentDetail /></ProtectedRoute>} />
+            <Route path="/mentor/students" element={<ProtectedRoute requiredRole="MENTOR"><MentorStudentsPage /></ProtectedRoute>} />
+            <Route path="/mentor/student-detail" element={<ProtectedRoute requiredRole="MENTOR"><MentorStudentDetail /></ProtectedRoute>} />
+            <Route path="/mentor/attendance" element={<ProtectedRoute requiredRole="MENTOR"><MentorAttendancePage /></ProtectedRoute>} />
+            <Route path="/mentor/academics" element={<ProtectedRoute requiredRole="MENTOR"><MentorAcademicRecordsPage /></ProtectedRoute>} />
             <Route path="/mentor/analytics" element={<ProtectedRoute requiredRole="MENTOR"><MentorAnalytics /></ProtectedRoute>} />
             <Route path="/mentor/settings" element={<ProtectedRoute requiredRole="MENTOR"><SettingsPage /></ProtectedRoute>} />
 

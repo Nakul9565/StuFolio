@@ -62,6 +62,11 @@ async function main() {
             password: hashedPassword,
             name: "Main Mentor",
             role: "MENTOR",
+            mentor: {
+                update: {
+                    section: "CSE-B"
+                }
+            }
         },
         create: {
             email: "mentor@campus.edu",
@@ -72,7 +77,7 @@ async function main() {
                 create: {
                     department: "Computer Science & Engineering",
                     designation: "Professor",
-                    section: "CS-A",
+                    section: "CSE-B",
                 },
             },
         },

@@ -39,6 +39,7 @@ model Student {
   semesterCGPAs  SemesterCGPA[]
   academicRecords AcademicRecord[]
   attendances    Attendance[]
+  dailyAttendance DailyAttendance[]
   codingProfiles CodingProfile[]
   badges         Badge[]
   skills         StudentSkill[]
@@ -53,6 +54,7 @@ model Mentor {
   department  String
   designation String
   section     String // Section this mentor oversees
+  dailyAttendance DailyAttendance[]
 }
 
 // ─── Academic ────────────────────────────────────────────
@@ -63,6 +65,7 @@ model Subject {
   semester        String
   academicRecords AcademicRecord[]
   attendances     Attendance[]
+  dailyAttendance DailyAttendance[]
 }
 
 model SemesterCGPA {
@@ -100,6 +103,20 @@ model Attendance {
   total     Int
 
   @@unique([studentId, subjectId])
+}
+
+model DailyAttendance {
+  id        String   @id @default(uuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  date      DateTime @default(now())
+  status    String   // PRESENT | ABSENT
+  mentorId  String
+  mentor    Mentor   @relation(fields: [mentorId], references: [id])
+
+  @@unique([studentId, subjectId, date])
 }
 
 // ─── Coding Profiles ─────────────────────────────────────

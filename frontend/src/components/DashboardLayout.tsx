@@ -39,8 +39,9 @@ const studentNavItems = [
 const mentorNavItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/mentor" },
   { icon: Users, label: "Students", path: "/mentor/students" },
+  { icon: BookOpen, label: "Daily Attendance", path: "/mentor/attendance" },
+  { icon: GraduationCap, label: "Academic Records", path: "/mentor/academics" },
   { icon: BarChart3, label: "Analytics", path: "/mentor/analytics" },
-  { icon: AlertTriangle, label: "Alerts", path: "/mentor/alerts" },
   { icon: Trophy, label: "Leaderboard", path: "/leaderboard" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];

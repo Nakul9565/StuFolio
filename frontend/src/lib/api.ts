@@ -206,6 +206,24 @@ class ApiClient {
         return this.request<unknown>("/mentor/analytics");
     }
 
+    getMentorSubjects() {
+        return this.request<any[]>("/mentor/subjects");
+    }
+
+    submitDailyAttendance(subjectId: string, date: string, records: { studentId: string; status: string }[]) {
+        return this.request<unknown>("/mentor/attendance/daily", {
+            method: "POST",
+            body: JSON.stringify({ subjectId, date, records }),
+        });
+    }
+
+    updateStudentAcademics(studentId: string, data: { subjectId: string; marks: number; semester: string }) {
+        return this.request<unknown>(`/mentor/students/${studentId}/academics`, {
+            method: "PATCH",
+            body: JSON.stringify(data),
+        });
+    }
+
     // Leaderboard
     getLeaderboard(tab = "overall") {
         return this.request<unknown>(`/leaderboard?tab=${tab}`);

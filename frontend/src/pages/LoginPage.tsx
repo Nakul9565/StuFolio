@@ -14,6 +14,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [enrollment, setEnrollment] = useState("");
+  const [section, setSection] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -40,6 +41,7 @@ const LoginPage = () => {
           name,
           role: role === "student" ? "STUDENT" : "MENTOR",
           enrollment: role === "student" ? enrollment : undefined,
+          section: section || undefined,
         });
       }
 
@@ -177,6 +179,19 @@ const LoginPage = () => {
                   placeholder="BTCS22-001"
                   value={enrollment}
                   onChange={(e) => setEnrollment(e.target.value)}
+                  className="bg-secondary/50 border-border text-foreground h-11 rounded-xl"
+                />
+              </div>
+            )}
+
+            {!isLogin && (
+              <div className="space-y-2">
+                <Label className="text-foreground text-sm">Section</Label>
+                <Input
+                  placeholder="e.g. CSE-B"
+                  value={section}
+                  onChange={(e) => setSection(e.target.value)}
+                  required
                   className="bg-secondary/50 border-border text-foreground h-11 rounded-xl"
                 />
               </div>

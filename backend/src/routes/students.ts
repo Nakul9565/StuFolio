@@ -476,6 +476,9 @@ router.delete("/me/coding-profiles/:id", authenticateToken, requireRole("STUDENT
 // GET /api/students/:id — specific student (for mentors)
 router.get("/:id", authenticateToken, requireRole("MENTOR"), async (req: AuthRequest, res: Response) => {
     try {
+        const start = Date.now();
+        console.log(`[PERF] Fetching student detail for ID: ${req.params.id}`);
+
         const student = await prisma.student.findUnique({
             where: { id: req.params.id as string },
             include: {
@@ -488,6 +491,9 @@ router.get("/:id", authenticateToken, requireRole("MENTOR"), async (req: AuthReq
                 skills: { include: { skill: true } },
             },
         });
+
+        const duration = Date.now() - start;
+        console.log(`[PERF] Student detail fetch took ${duration}ms`);
 
         if (!student) return res.status(404).json({ error: "Student not found" });
 
