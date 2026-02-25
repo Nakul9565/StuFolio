@@ -186,11 +186,7 @@ const LandingPage = () => {
       {/* Hero */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
         <div className="absolute inset-0 bg-gradient-hero" />
-        <div className="absolute inset-0 grid-pattern opacity-30" />
-        <div className="absolute inset-0 bg-gradient-mesh" />
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-primary/8 blur-[150px] animate-pulse-glow" />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-chart-3/8 blur-[120px] animate-pulse-glow" />
-        <div className="absolute top-1/2 right-1/3 w-[300px] h-[300px] rounded-full bg-accent/5 blur-[100px] animate-pulse-glow" />
+
 
         <div className="relative z-10 container mx-auto px-6 text-center">
           <motion.div

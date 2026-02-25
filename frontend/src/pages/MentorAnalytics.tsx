@@ -70,10 +70,10 @@ const keyMetrics = [
 ];
 
 const tooltipStyle = {
-    background: "hsl(220, 18%, 7%)",
-    border: "1px solid hsl(220, 16%, 14%)",
+    background: "#ffffff",
+    border: "1px solid hsl(220, 13%, 91%)",
     borderRadius: "8px",
-    color: "hsl(210, 40%, 96%)",
+    color: "hsl(220, 14%, 10%)",
 };
 
 const MentorAnalytics = () => {
@@ -92,9 +92,9 @@ const MentorAnalytics = () => {
                         <div className="flex items-center justify-between mb-3">
                             <span className="text-xs font-medium text-muted-foreground">{m.label}</span>
                             <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${m.color === "primary" ? "bg-primary/10 text-primary" :
-                                    m.color === "accent" ? "bg-accent/10 text-accent" :
-                                        m.color === "warning" ? "bg-warning/10 text-warning" :
-                                            "bg-destructive/10 text-destructive"
+                                m.color === "accent" ? "bg-accent/10 text-accent" :
+                                    m.color === "warning" ? "bg-warning/10 text-warning" :
+                                        "bg-destructive/10 text-destructive"
                                 }`}>
                                 <m.icon className="h-4 w-4" />
                             </div>
@@ -117,12 +117,12 @@ const MentorAnalytics = () => {
                     <p className="text-xs text-muted-foreground mb-4">Top, average, and bottom scores over time</p>
                     <ResponsiveContainer width="100%" height={280}>
                         <LineChart data={monthlyPerformance}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 16%, 14%)" />
-                            <XAxis dataKey="month" tick={{ fill: "hsl(215, 15%, 50%)", fontSize: 11 }} axisLine={false} />
-                            <YAxis tick={{ fill: "hsl(215, 15%, 50%)", fontSize: 11 }} axisLine={false} domain={[30, 100]} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 13%, 91%)" />
+                            <XAxis dataKey="month" tick={{ fill: "hsl(220, 9%, 46%)", fontSize: 11 }} axisLine={false} />
+                            <YAxis tick={{ fill: "hsl(220, 9%, 46%)", fontSize: 11 }} axisLine={false} domain={[30, 100]} />
                             <Tooltip contentStyle={tooltipStyle} />
-                            <Line type="monotone" dataKey="topScore" stroke="hsl(160, 84%, 39%)" strokeWidth={2} dot={false} name="Top" />
-                            <Line type="monotone" dataKey="avgScore" stroke="hsl(217, 91%, 60%)" strokeWidth={2} dot={false} name="Average" />
+                            <Line type="monotone" dataKey="topScore" stroke="hsl(172, 66%, 40%)" strokeWidth={2} dot={false} name="Top" />
+                            <Line type="monotone" dataKey="avgScore" stroke="hsl(234, 89%, 56%)" strokeWidth={2} dot={false} name="Average" />
                             <Line type="monotone" dataKey="bottomScore" stroke="hsl(0, 72%, 51%)" strokeWidth={2} dot={false} name="Bottom" />
                             <Legend wrapperStyle={{ fontSize: '11px' }} />
                         </LineChart>
@@ -140,11 +140,11 @@ const MentorAnalytics = () => {
                     <p className="text-xs text-muted-foreground mb-4">Class averages by subject</p>
                     <ResponsiveContainer width="100%" height={280}>
                         <BarChart data={subjectAvgScores}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 16%, 14%)" />
-                            <XAxis dataKey="subject" tick={{ fill: "hsl(215, 15%, 50%)", fontSize: 11 }} axisLine={false} />
-                            <YAxis tick={{ fill: "hsl(215, 15%, 50%)", fontSize: 11 }} axisLine={false} domain={[0, 100]} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 13%, 91%)" />
+                            <XAxis dataKey="subject" tick={{ fill: "hsl(220, 9%, 46%)", fontSize: 11 }} axisLine={false} />
+                            <YAxis tick={{ fill: "hsl(220, 9%, 46%)", fontSize: 11 }} axisLine={false} domain={[0, 100]} />
                             <Tooltip contentStyle={tooltipStyle} />
-                            <Bar dataKey="avg" fill="hsl(217, 91%, 60%)" radius={[4, 4, 0, 0]} barSize={28} name="Class Avg" />
+                            <Bar dataKey="avg" fill="hsl(234, 89%, 56%)" radius={[4, 4, 0, 0]} barSize={28} name="Class Avg" />
                         </BarChart>
                     </ResponsiveContainer>
                 </motion.div>
@@ -162,11 +162,11 @@ const MentorAnalytics = () => {
                     <p className="text-xs text-muted-foreground mb-4">Active vs inactive coding students per month</p>
                     <ResponsiveContainer width="100%" height={250}>
                         <BarChart data={codingActivityByMonth}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 16%, 14%)" />
-                            <XAxis dataKey="month" tick={{ fill: "hsl(215, 15%, 50%)", fontSize: 11 }} axisLine={false} />
-                            <YAxis tick={{ fill: "hsl(215, 15%, 50%)", fontSize: 11 }} axisLine={false} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 13%, 91%)" />
+                            <XAxis dataKey="month" tick={{ fill: "hsl(220, 9%, 46%)", fontSize: 11 }} axisLine={false} />
+                            <YAxis tick={{ fill: "hsl(220, 9%, 46%)", fontSize: 11 }} axisLine={false} />
                             <Tooltip contentStyle={tooltipStyle} />
-                            <Bar dataKey="active" fill="hsl(160, 84%, 39%)" radius={[4, 4, 0, 0]} barSize={20} name="Active" stackId="a" />
+                            <Bar dataKey="active" fill="hsl(172, 66%, 40%)" radius={[4, 4, 0, 0]} barSize={20} name="Active" stackId="a" />
                             <Bar dataKey="inactive" fill="hsl(0, 72%, 51%)" radius={[4, 4, 0, 0]} barSize={20} name="Inactive" stackId="a" />
                             <Legend wrapperStyle={{ fontSize: '11px' }} />
                         </BarChart>
@@ -190,9 +190,9 @@ const MentorAnalytics = () => {
                                     <stop offset="95%" stopColor="hsl(0, 72%, 51%)" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 16%, 14%)" />
-                            <XAxis dataKey="month" tick={{ fill: "hsl(215, 15%, 50%)", fontSize: 11 }} axisLine={false} />
-                            <YAxis tick={{ fill: "hsl(215, 15%, 50%)", fontSize: 11 }} axisLine={false} domain={[0, 15]} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 13%, 91%)" />
+                            <XAxis dataKey="month" tick={{ fill: "hsl(220, 9%, 46%)", fontSize: 11 }} axisLine={false} />
+                            <YAxis tick={{ fill: "hsl(220, 9%, 46%)", fontSize: 11 }} axisLine={false} domain={[0, 15]} />
                             <Tooltip contentStyle={tooltipStyle} />
                             <Area type="monotone" dataKey="atRisk" stroke="hsl(0, 72%, 51%)" fill="url(#maa1)" strokeWidth={2} name="At Risk" />
                         </AreaChart>

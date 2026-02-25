@@ -45,6 +45,15 @@ export interface StudentProfileResponse {
     skills: string[];
 }
 
+export interface Event {
+    id: string;
+    title: string;
+    date: string | Date;
+    type: "contest" | "deadline" | "event" | string;
+    description?: string;
+    location?: string;
+}
+
 class ApiClient {
     private token: string | null = null;
 
@@ -287,7 +296,7 @@ class ApiClient {
     // Events
     getEvents(month?: number, year?: number) {
         const params = month && year ? `?month=${month}&year=${year}` : "";
-        return this.request<unknown>(`/events${params}`);
+        return this.request<Event[]>(`/events${params}`);
     }
 
     // Notifications

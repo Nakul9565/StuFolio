@@ -107,10 +107,10 @@ const CareerPage = () => {
                     <p className="text-xs text-muted-foreground mb-4">Your skills vs industry requirements</p>
                     <ResponsiveContainer width="100%" height={300}>
                         <RadarChart data={skillGapData}>
-                            <PolarGrid stroke="hsl(220, 16%, 14%)" />
-                            <PolarAngleAxis dataKey="skill" tick={{ fill: "hsl(215, 15%, 50%)", fontSize: 11 }} />
-                            <PolarRadiusAxis tick={{ fill: "hsl(215, 15%, 50%)", fontSize: 10 }} domain={[0, 100]} />
-                            <Radar name="You" dataKey="student" stroke="hsl(217, 91%, 60%)" fill="hsl(217, 91%, 60%)" fillOpacity={0.2} strokeWidth={2} />
+                            <PolarGrid stroke="hsl(220, 13%, 91%)" />
+                            <PolarAngleAxis dataKey="skill" tick={{ fill: "hsl(220, 9%, 46%)", fontSize: 11 }} />
+                            <PolarRadiusAxis tick={{ fill: "hsl(220, 9%, 46%)", fontSize: 10 }} domain={[0, 100]} />
+                            <Radar name="You" dataKey="student" stroke="hsl(234, 89%, 56%)" fill="hsl(234, 89%, 56%)" fillOpacity={0.2} strokeWidth={2} />
                             <Radar name="Industry" dataKey="industry" stroke="hsl(160, 84%, 39%)" fill="hsl(160, 84%, 39%)" fillOpacity={0.1} strokeWidth={2} strokeDasharray="4 4" />
                         </RadarChart>
                     </ResponsiveContainer>

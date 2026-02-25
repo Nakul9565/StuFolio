@@ -39,10 +39,10 @@ const iconMap: Record<string, any> = {
 };
 
 const tooltipStyle = {
-    background: "hsl(220, 18%, 7%)",
-    border: "1px solid hsl(220, 16%, 14%)",
+    background: "#ffffff",
+    border: "1px solid hsl(220, 13%, 91%)",
     borderRadius: "8px",
-    color: "hsl(210, 40%, 96%)",
+    color: "hsl(220, 14%, 10%)",
 };
 
 const AIAnalysis = () => {
@@ -145,14 +145,14 @@ const AIAnalysis = () => {
                     <p className="text-xs text-muted-foreground mb-4">Your competency across subjects</p>
                     <ResponsiveContainer width="100%" height={300}>
                         <RadarChart data={data.strengthData}>
-                            <PolarGrid stroke="hsl(220, 16%, 14%)" />
-                            <PolarAngleAxis dataKey="subject" tick={{ fill: "hsl(215, 15%, 50%)", fontSize: 12 }} />
-                            <PolarRadiusAxis tick={{ fill: "hsl(215, 15%, 50%)", fontSize: 10 }} domain={[0, 100]} />
+                            <PolarGrid stroke="hsl(220, 13%, 91%)" />
+                            <PolarAngleAxis dataKey="subject" tick={{ fill: "hsl(220, 9%, 46%)", fontSize: 12 }} />
+                            <PolarRadiusAxis tick={{ fill: "hsl(220, 9%, 46%)", fontSize: 10 }} domain={[0, 100]} />
                             <Radar
                                 name="Score"
                                 dataKey="score"
-                                stroke="hsl(217, 91%, 60%)"
-                                fill="hsl(217, 91%, 60%)"
+                                stroke="hsl(234, 89%, 56%)"
+                                fill="hsl(234, 89%, 56%)"
                                 fillOpacity={0.2}
                                 strokeWidth={2}
                             />
@@ -173,19 +173,19 @@ const AIAnalysis = () => {
                         <AreaChart data={data.predictionData}>
                             <defs>
                                 <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="hsl(217, 91%, 60%)" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="hsl(217, 91%, 60%)" stopOpacity={0} />
+                                    <stop offset="5%" stopColor="hsl(234, 89%, 56%)" stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor="hsl(234, 89%, 56%)" stopOpacity={0} />
                                 </linearGradient>
                                 <linearGradient id="colorPredicted" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="hsl(250, 80%, 60%)" stopOpacity={0.3} />
                                     <stop offset="95%" stopColor="hsl(250, 80%, 60%)" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 16%, 14%)" />
-                            <XAxis dataKey="sem" tick={{ fill: "hsl(215, 15%, 50%)", fontSize: 11 }} axisLine={false} />
-                            <YAxis tick={{ fill: "hsl(215, 15%, 50%)", fontSize: 11 }} axisLine={false} domain={[0, 10]} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 13%, 91%)" />
+                            <XAxis dataKey="sem" tick={{ fill: "hsl(220, 9%, 46%)", fontSize: 11 }} axisLine={false} />
+                            <YAxis tick={{ fill: "hsl(220, 9%, 46%)", fontSize: 11 }} axisLine={false} domain={[0, 10]} />
                             <Tooltip contentStyle={tooltipStyle} />
-                            <Area type="monotone" dataKey="actual" stroke="hsl(217, 91%, 60%)" fill="url(#colorActual)" strokeWidth={2} name="Actual" connectNulls />
+                            <Area type="monotone" dataKey="actual" stroke="hsl(234, 89%, 56%)" fill="url(#colorActual)" strokeWidth={2} name="Actual" connectNulls />
                             <Area type="monotone" dataKey="predicted" stroke="hsl(250, 80%, 60%)" fill="url(#colorPredicted)" strokeWidth={2} strokeDasharray="5 5" name="Predicted" connectNulls />
                         </AreaChart>
                     </ResponsiveContainer>

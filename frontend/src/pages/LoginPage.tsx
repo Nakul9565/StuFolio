@@ -63,10 +63,7 @@ const LoginPage = () => {
       {/* Left panel */}
       <div className="hidden lg:flex flex-1 relative items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-hero" />
-        <div className="absolute inset-0 grid-pattern opacity-20" />
-        <div className="absolute inset-0 bg-gradient-mesh" />
-        <div className="absolute top-1/3 left-1/3 w-[400px] h-[400px] rounded-full bg-primary/10 blur-[120px] animate-pulse-glow" />
-        <div className="absolute bottom-1/3 right-1/4 w-[300px] h-[300px] rounded-full bg-chart-3/8 blur-[100px] animate-pulse-glow" />
+
 
         <div className="relative z-10 p-12 max-w-lg">
           <Link to="/" className="flex items-center gap-2.5 mb-16">
