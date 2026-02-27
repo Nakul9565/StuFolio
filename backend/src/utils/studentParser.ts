@@ -78,7 +78,7 @@ export function parseStudentData(enrollment: string, email: string): ParsedStude
 
     // 1. Try parsing email first as a fallback/baseline
     // e.g. nakul95cseb24 -> name=nakul, roll=95, section=cseb, year=24
-    const emailMatch = emailUsername.match(/^(.+?)(\d{2})([a-z]{2,4})(\d{2})$/);
+    const emailMatch = emailUsername.match(/^(.+?)(\d+)([a-z]{2,4})(\d{2})$/);
     if (emailMatch) {
         const [, , rollDigits, sectionStr, yearDigits] = emailMatch;
         rollNumber = parseInt(rollDigits, 10).toString();
