@@ -15,6 +15,7 @@ interface AuthContextType {
     isLoading: boolean;
     isAuthenticated: boolean;
     login: (email: string, password: string) => Promise<void>;
+    msalLogin: (idToken: string) => Promise<void>;
     register: (userData: Record<string, unknown>) => Promise<void>;
     logout: () => void;
 }
@@ -78,6 +79,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem("stufolio_user", JSON.stringify(data.user));
     };
 
+    const msalLogin = async (idToken: string) => {
+        const data = await api.msalLogin(idToken);
+        setUser(data.user);
+        localStorage.setItem("stufolio_user", JSON.stringify(data.user));
+    };
+
     const register = async (userData: Record<string, unknown>) => {
         const data = await api.register(userData);
         setUser(data.user);
@@ -96,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 isLoading,
                 isAuthenticated: !!user,
                 login,
+                msalLogin,
                 register,
                 logout,
             }}

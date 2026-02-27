@@ -113,6 +113,15 @@ class ApiClient {
         return data;
     }
 
+    async msalLogin(idToken: string) {
+        const data = await this.request<AuthResponse>("/auth/msal", {
+            method: "POST",
+            body: JSON.stringify({ idToken }),
+        });
+        this.setToken(data.token);
+        return data;
+    }
+
     async register(userData: Record<string, unknown>) {
         const data = await this.request<AuthResponse>("/auth/register", {
             method: "POST",
